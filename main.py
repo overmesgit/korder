@@ -1,12 +1,17 @@
 import random
 
 test_data = [
-    [0, 1, 0, 0, 0, 0, 0, 0, 1],
-    [0, 1, 1, 0, 0, 0, 0, 0, 1],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 1, 0, 0, 0, 0, 0, 0],
     [0, 1, 1, 1, 0, 0, 0, 0, 0],
-    [0, 1, 1, 1, 1, 0, 0, 0, 1],
-    [0, 0, 1, 1, 1, 1, 0, 1, 1],
-    [0, 0, 1, 1, 1, 1, 0, 0, 1],
+    [0, 1, 1, 1, 1, 0, 0, 0, 0],
+    [0, 0, 1, 1, 1, 1, 0, 0, 0],
+    [0, 0, 1, 1, 1, 1, 0, 0, 0],
+    [1, 0, 0, 0, 0, 0, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 1, 0, 1],
 ]
 
 factors = 5
@@ -78,7 +83,6 @@ for e in range(500):
         error = error_func(current_user, scored_item, not_scored_item, N)
         last_errors_sum += error
 
-        V_not_scored_item = V[not_scored_item]
         V[not_scored_item] = [v - 0.01*error for v in V[not_scored_item]]
         V[scored_item] = [v + 0.01*error for v in V[scored_item]]
         enforce_constraints(not_scored_item)
