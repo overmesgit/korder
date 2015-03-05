@@ -6,27 +6,22 @@ from scipy.sparse import linalg
 from scipy import sparse
 
 test_data = [
-    [0, 1, 0, 0, 0, 0, 0, 0, 0],
-    [0, 1, 1, 0, 0, 0, 0, 0, 0],
-    [0, 1, 1, 1, 0, 0, 0, 0, 0],
-    [0, 1, 1, 1, 1, 0, 0, 0, 0],
-    [0, 0, 1, 1, 1, 1, 0, 0, 0],
-    [0, 0, 1, 1, 1, 1, 0, 0, 0],
-    [1, 0, 0, 0, 0, 0, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 1, 0, 1],
+    [0, 1, 1, 0, 0, 0],
+    [1, 1, 1, 0, 0, 0],
+    [1, 1, 1, 0, 0, 0],
+    [0, 0, 0, 1, 1, 1],
+    [0, 0, 0, 1, 1, 1],
+    [0, 0, 0, 1, 1, 0],
 ]
 
 test_data_array = np.array(test_data)
 test_data_sparse = sparse.csr_matrix(test_data_array)
 
-factors = 20
+factors = 5
 users_count = test_data_sparse.shape[0]
 items_count = test_data_sparse.shape[1]
 items_indexes = set(range(items_count))
-V_array = np.random.randint(1, 50, (items_count, factors))/100
+V_array = np.random.rand(items_count, factors)
 
 def row_multiply(a, b):
     return sum(map(lambda d: d[0]*d[1], zip(a, b)))
@@ -82,23 +77,30 @@ def enforce_constraints(item):
         V_array[item] = C*V_array[item]/norm
 
 
+previous_error_sum = 100
 last_errors_sum = 0
-for e in range(5000):
+for e in range(1, 800):
     user_scores_array, scored_item = get_positive_item_d()
     user_indexes = user_scores_array.indices
     not_scored_item, N = get_n(user_indexes, scored_item)
+
     if get_f(user_indexes, not_scored_item) > get_f(user_indexes, scored_item) - 1:
         error = error_func(user_indexes, scored_item, not_scored_item, N)
         last_errors_sum += error
 
-        V_array[not_scored_item] = V_array[not_scored_item] - 0.01*error*V_array[not_scored_item]
-        V_array[scored_item] = V_array[scored_item] + 0.01*error*V_array[scored_item]
+        if e % 50 == 0:
+            print(last_errors_sum/50)
+            if previous_error_sum < last_errors_sum:
+                break
+            previous_error_sum = last_errors_sum
+            last_errors_sum = 0
+
+        V_array[scored_item] = V_array[scored_item] + 0.1*error
+        V_array[not_scored_item] = V_array[not_scored_item] - 0.1*error
         enforce_constraints(not_scored_item)
         enforce_constraints(scored_item)
 
-    if e % 100 == 0:
-        print(last_errors_sum/100)
-        last_errors_sum = 0
+
 
 for u in range(users_count):
     print()
